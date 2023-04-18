@@ -1,0 +1,26 @@
+pipeline{
+    agent any 
+
+    stages{
+        satge("Git Checkout"){
+            steps{
+                git credentialsId: 'om_git', url: 'https://github.com/bandiomkar39/hello-world.git'
+
+            }
+        }
+        satge("Maven Build"){
+            steps{
+                sh "mvn clean package"
+                sh "mv target/*.war target/myweb.war"
+            }
+        }
+        satge("deploy-dev"){
+            steps{
+                sshagent(["tomcat-new"])
+                sh "scp -o StrictHostKeyChecking=no target/myweb.war  ubuntu@192.168.209.138:/opt/apache-tomcat-9.0.73/webapps/"
+                sh "ssh ubuntu@192.168.209.139:/opt/apache-tomcat-9.0.73/bin/shutdown.sh"
+                sh "ssh ubuntu@192.168.209.139:/opt/apache-tomcat-9.0.73/bin/startup.sh"
+            }
+        }
+    }
+}
